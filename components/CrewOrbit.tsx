@@ -13,16 +13,38 @@ type CrewOrbitProps = {
 
 const N = 9;
 
-/** Móvil (max-width 767px): 5 en arco superior y 4 en inferior; huecos laterales para la barra. */
-function bubbleAngleDeg(index: number, mobileSplit: boolean) {
-  if (!mobileSplit) return (index / N) * 360;
-  if (index < 5) {
-    const u = (index / 4) * 2 - 1;
-    return u * 70;
+/**
+ * Calcula la posición (x, y) en px relativa al centro de la órbita.
+ * Móvil: elipse vertical — 5 en arco superior compacto, 4 en arco inferior compacto.
+ */
+function bubblePosition(
+  index: number,
+  r: number,
+  mobileSplit: boolean,
+): { x: number; y: number } {
+  if (!mobileSplit) {
+    const deg = (index / N) * 360;
+    const rad = (deg * Math.PI) / 180;
+    return { x: r * Math.sin(rad), y: -r * Math.cos(rad) };
   }
+
+  // Elipse más alta que ancha para separar arriba/abajo visualmente
+  const rx = r * 1.28;
+  const ry = r * 1.3;
+
+  if (index < 5) {
+    // Top 5: arco -60° → +60°
+    const u = (index / 4) * 2 - 1;
+    const rad = (u * 60 * Math.PI) / 180;
+    return { x: rx * Math.sin(rad), y: -ry * Math.cos(rad) };
+  }
+
+  // Bottom 4: arco 180° ± 60°
   const j = index - 5;
   const v = (j / 3) * 2 - 1;
-  return 180 + v * 70;
+  const deg = 180 + v * 60;
+  const rad = (deg * Math.PI) / 180;
+  return { x: rx * Math.sin(rad), y: -ry * Math.cos(rad) };
 }
 
 function useMobileOrbitSplit() {
@@ -58,24 +80,36 @@ export function CrewOrbit({
     >
       <div className="absolute left-1/2 top-1/2 h-0 w-0">
         {crew.slice(0, N).map((member, i) => {
-          const deg = bubbleAngleDeg(i, mobileSplit);
+          const pos = bubblePosition(i, r, mobileSplit);
           const hasReel = Boolean(member.reelShortCode);
           const floatDuration = 2.8 + (i % 4) * 0.35;
           const floatDelay = i * 0.18;
           const pulseHalfDuration = 6 + (i % 5) * 0.45;
 
+          const mag = Math.sqrt(pos.x * pos.x + pos.y * pos.y) || 1;
+          const ux = pos.x / mag;
+          const uy = pos.y / mag;
+          // SVG label geometry (desktop: button = 90px → radius ≈ 45px)
+          const lineX1 = ux * 52;
+          const lineY1 = uy * 52;
+          const lineX2 = ux * 84;
+          const lineY2 = uy * 84;
+          const textX = ux * 92;
+          const textY = uy * 92;
+          const textAnchor =
+            ux > 0.25 ? "start" : ux < -0.25 ? "end" : "middle";
+          const dominantBaseline =
+            uy > 0.25 ? "hanging" : uy < -0.25 ? "auto" : "central";
+
           return (
             <div
               key={member.id}
               className="absolute left-0 top-0"
-              style={{
-                transform: `translate(-50%, -50%) rotate(${deg}deg)`,
-                transformOrigin: "center center",
-              }}
+              style={{ transform: "translate(-50%, -50%)" }}
             >
               <motion.div
-                initial={reduce ? false : { y: 0, scale: 0, opacity: 0 }}
-                animate={{ y: -r, scale: 1, opacity: 1 }}
+                initial={reduce ? false : { x: 0, y: 0, scale: 0, opacity: 0 }}
+                animate={{ x: pos.x, y: pos.y, scale: 1, opacity: 1 }}
                 transition={
                   reduce
                     ? { duration: 0 }
@@ -86,23 +120,23 @@ export function CrewOrbit({
                         delay: 0.08 * i,
                       }
                 }
-                style={{ transformOrigin: "center top" }}
               >
-                <div style={{ transform: `rotate(${-deg}deg)` }}>
-                  <div
-                    className={reduce ? "" : "crew-bubble-float"}
-                    style={
-                      reduce
-                        ? undefined
-                        : {
-                            animationDuration: `${floatDuration}s`,
-                            animationDelay: `${floatDelay}s`,
-                          }
-                    }
-                  >
+                <div
+                  className={reduce ? "" : "crew-bubble-float"}
+                  style={
+                    reduce
+                      ? undefined
+                      : {
+                          animationDuration: `${floatDuration}s`,
+                          animationDelay: `${floatDelay}s`,
+                        }
+                  }
+                >
+                  {/* group wrapper enables CSS hover detection for the label */}
+                  <div className="group relative">
                     <motion.div
                       animate={
-                        reduce
+                        reduce || mobileSplit
                           ? undefined
                           : {
                               scale: [1, 1.045],
@@ -126,7 +160,7 @@ export function CrewOrbit({
                           hasReel && !reduce ? { scale: 0.97 } : undefined
                         }
                         className={[
-                          "pointer-events-auto flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-full border-[3px] border-white/50 bg-gradient-to-b from-white/35 to-white/10 shadow-[0_12px_32px_rgba(251,146,60,0.35),inset_0_2px_12px_rgba(255,255,255,0.45)] backdrop-blur-none md:h-[78px] md:w-[78px] md:backdrop-blur-sm",
+                          "pointer-events-auto flex h-[72px] w-[72px] items-center justify-center overflow-hidden rounded-full border-[3px] border-white/50 bg-gradient-to-b from-white/35 to-white/10 shadow-[0_12px_32px_rgba(251,146,60,0.35),inset_0_2px_12px_rgba(255,255,255,0.45)] backdrop-blur-none md:h-[90px] md:w-[90px] md:backdrop-blur-sm",
                           hasReel
                             ? "ring-2 ring-amber-300/40 hover:border-amber-100 hover:ring-amber-200/60 focus:outline-none focus-visible:ring-4 focus-visible:ring-amber-300/70"
                             : "cursor-not-allowed border-white/25 opacity-70 ring-0",
@@ -145,6 +179,40 @@ export function CrewOrbit({
                         <OrbitAvatar member={member} />
                       </motion.button>
                     </motion.div>
+
+                    {/* Name label on hover — desktop only */}
+                    <svg
+                      className="pointer-events-none absolute left-1/2 top-1/2 hidden overflow-visible opacity-0 transition-opacity duration-200 group-hover:opacity-100 md:block"
+                      style={{ width: 0, height: 0 }}
+                      aria-hidden
+                    >
+                      <line
+                        x1={lineX1}
+                        y1={lineY1}
+                        x2={lineX2}
+                        y2={lineY2}
+                        stroke="rgba(255,255,255,0.7)"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                      />
+                      <text
+                        x={textX}
+                        y={textY}
+                        textAnchor={textAnchor}
+                        dominantBaseline={dominantBaseline}
+                        fill="white"
+                        fontSize="12"
+                        fontWeight="600"
+                        style={{
+                          filter:
+                            "drop-shadow(0 1px 4px rgba(0,0,0,0.85))",
+                          fontFamily: "inherit",
+                          letterSpacing: "0.04em",
+                        }}
+                      >
+                        {member.nombre}
+                      </text>
+                    </svg>
                   </div>
                 </div>
               </motion.div>

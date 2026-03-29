@@ -1,6 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "motion/react";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { useCountdown } from "./useCountdown";
 
 const labels = ["Días", "Horas", "Minutos", "Segundos"] as const;
@@ -19,8 +20,12 @@ function CountdownCell({
   showDivider: boolean;
 }) {
   const reduce = useReducedMotion();
+  const isMobile = useIsMobile();
   const display =
     label === "Días" ? value.toString() : pad2(Math.min(value, 99));
+
+  const digitClass =
+    "countdown-digit font-[family-name:var(--font-fredoka)] text-2xl font-bold tracking-tight tabular-nums sm:text-3xl md:text-4xl";
 
   return (
     <>
@@ -31,15 +36,21 @@ function CountdownCell({
         />
       )}
       <div className="flex min-w-0 flex-[1_1_0%] flex-col items-center justify-center px-1.5 py-3 sm:px-4 sm:py-4">
-        <motion.span
-          key={display}
-          initial={reduce ? false : { opacity: 0.5, y: 6, rotate: -2 }}
-          animate={{ opacity: 1, y: 0, rotate: 0 }}
-          transition={{ type: "spring", stiffness: 320, damping: 22 }}
-          className="countdown-digit font-[family-name:var(--font-fredoka)] text-2xl font-bold tracking-tight tabular-nums sm:text-3xl md:text-4xl"
-        >
-          {display}
-        </motion.span>
+        {reduce || isMobile ? (
+          <span key={display} className={digitClass}>
+            {display}
+          </span>
+        ) : (
+          <motion.span
+            key={display}
+            initial={{ opacity: 0.5, y: 6, rotate: -2 }}
+            animate={{ opacity: 1, y: 0, rotate: 0 }}
+            transition={{ type: "spring", stiffness: 320, damping: 22 }}
+            className={digitClass}
+          >
+            {display}
+          </motion.span>
+        )}
         <span className="countdown-label font-[family-name:var(--font-fredoka)] mt-1 text-[10px] font-semibold uppercase tracking-[0.12em] sm:text-xs">
           {label}
         </span>

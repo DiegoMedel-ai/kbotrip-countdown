@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 
 type AnimatedBackgroundProps = {
   intensity: number;
+  /** Móvil: menos blobs, sin burst y blur más ligero */
+  mobileLite?: boolean;
 };
 
 function usePrefersReducedMotion() {
@@ -21,10 +23,13 @@ function usePrefersReducedMotion() {
   return reduce;
 }
 
-export function AnimatedBackground({ intensity }: AnimatedBackgroundProps) {
+export function AnimatedBackground({
+  intensity,
+  mobileLite = false,
+}: AnimatedBackgroundProps) {
   const t = intensity;
   const prefersReduced = usePrefersReducedMotion();
-  const slow = prefersReduced || t < 0.05;
+  const slow = prefersReduced || t < 0.05 || mobileLite;
 
   return (
     <div
@@ -48,6 +53,7 @@ export function AnimatedBackground({ intensity }: AnimatedBackgroundProps) {
         delay={0}
         scale={1 + t * 0.35}
         opacity={0.12 + t * 0.45}
+        mobileLite={mobileLite}
       />
       <Blob
         position="right-[-10%] top-[35%] h-[min(50vw,380px)] w-[min(50vw,380px)]"
@@ -56,6 +62,7 @@ export function AnimatedBackground({ intensity }: AnimatedBackgroundProps) {
         delay={-4}
         scale={1 + t * 0.28}
         opacity={0.1 + t * 0.4}
+        mobileLite={mobileLite}
       />
       <Blob
         position="bottom-[5%] left-[20%] h-[min(45vw,340px)] w-[min(45vw,340px)]"
@@ -64,25 +71,32 @@ export function AnimatedBackground({ intensity }: AnimatedBackgroundProps) {
         delay={-2}
         scale={1 + t * 0.32}
         opacity={0.08 + t * 0.38}
+        mobileLite={mobileLite}
       />
-      <Blob
-        position="left-[35%] top-[45%] h-[min(40vw,300px)] w-[min(40vw,300px)]"
-        gradient="radial-gradient(circle, rgba(34,211,238,0.42) 0%, rgba(34,211,238,0.08) 45%, transparent 70%)"
-        duration={slow ? 30 : Math.max(7, 20 - t * 13)}
-        delay={-6}
-        scale={0.9 + t * 0.4}
-        opacity={0.06 + t * 0.35}
-      />
-      <Blob
-        position="right-[25%] bottom-[20%] h-[min(35vw,260px)] w-[min(35vw,260px)]"
-        gradient="radial-gradient(circle, rgba(253,224,71,0.5) 0%, rgba(253,224,71,0.12) 45%, transparent 70%)"
-        duration={slow ? 24 : Math.max(5, 14 - t * 9)}
-        delay={-1}
-        scale={1 + t * 0.5}
-        opacity={t * 0.42}
-      />
+      {!mobileLite ? (
+        <>
+          <Blob
+            position="left-[35%] top-[45%] h-[min(40vw,300px)] w-[min(40vw,300px)]"
+            gradient="radial-gradient(circle, rgba(34,211,238,0.42) 0%, rgba(34,211,238,0.08) 45%, transparent 70%)"
+            duration={slow ? 30 : Math.max(7, 20 - t * 13)}
+            delay={-6}
+            scale={0.9 + t * 0.4}
+            opacity={0.06 + t * 0.35}
+            mobileLite={mobileLite}
+          />
+          <Blob
+            position="right-[25%] bottom-[20%] h-[min(35vw,260px)] w-[min(35vw,260px)]"
+            gradient="radial-gradient(circle, rgba(253,224,71,0.5) 0%, rgba(253,224,71,0.12) 45%, transparent 70%)"
+            duration={slow ? 24 : Math.max(5, 14 - t * 9)}
+            delay={-1}
+            scale={1 + t * 0.5}
+            opacity={t * 0.42}
+            mobileLite={mobileLite}
+          />
+        </>
+      ) : null}
 
-      {t > 0.55 && !prefersReduced ? (
+      {t > 0.55 && !prefersReduced && !mobileLite ? (
         <BurstLayer strength={(t - 0.55) / 0.45} />
       ) : null}
     </div>
@@ -96,6 +110,7 @@ function Blob({
   delay,
   scale,
   opacity,
+  mobileLite,
 }: {
   position: string;
   gradient: string;
@@ -103,6 +118,7 @@ function Blob({
   delay: number;
   scale: number;
   opacity: number;
+  mobileLite?: boolean;
 }) {
   return (
     <div
@@ -113,7 +129,11 @@ function Blob({
       }}
     >
       <div
-        className="blob-drift h-full w-full rounded-full blur-[48px] md:blur-[64px]"
+        className={
+          mobileLite
+            ? "blob-drift h-full w-full rounded-full blur-[22px]"
+            : "blob-drift h-full w-full rounded-full blur-[34px] md:blur-[48px] lg:blur-[64px]"
+        }
         style={{
           background: gradient,
           animationDuration: `${duration}s`,

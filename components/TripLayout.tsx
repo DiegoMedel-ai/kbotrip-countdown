@@ -2,6 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CREW } from "@/lib/crew";
+import { useIsMobile } from "@/lib/use-is-mobile";
 import { AnimatedBackground } from "./AnimatedBackground";
 import { CelebrationLayer } from "./CelebrationLayer";
 import { CountdownGlassBar } from "./CountdownGlassBar";
@@ -42,6 +43,7 @@ export function TripLayout() {
 
 function TripLayoutLive() {
   const { rampProgress, ringFillProgress, hasPassedTarget } = useTripProgress();
+  const isMobile = useIsMobile();
   const dialRef = useRef<HTMLDivElement>(null);
   const [orbitR, setOrbitR] = useState(140);
 
@@ -74,7 +76,7 @@ function TripLayoutLive() {
 
   return (
     <>
-      <AnimatedBackground intensity={rampProgress} />
+      <AnimatedBackground intensity={rampProgress} mobileLite={isMobile} />
       <div className="trip-grain" aria-hidden />
 
       <div className="relative z-[2] flex min-h-dvh flex-col">
@@ -93,7 +95,11 @@ function TripLayoutLive() {
               ref={dialRef}
               className="relative mx-auto aspect-square w-full max-w-[min(100%,440px)] overflow-visible sm:max-w-[440px] md:max-w-[480px]"
             >
-              <RadialTickRing ticks={144} fillProgress={ringFillProgress} />
+              <RadialTickRing
+                ticks={144}
+                fillProgress={ringFillProgress}
+                lowFi={isMobile}
+              />
 
               <div className="absolute inset-0">
                 <div className="absolute inset-[4%] flex items-center justify-center overflow-hidden rounded-full sm:inset-[5%]">

@@ -13,14 +13,18 @@ type RadialTickRingProps = {
   outerRatio?: number;
   /** 0–1: fracción del círculo “completada” (últimas 24h antes del viaje) */
   fillProgress?: number;
+  /** Móvil: menos marcas y sin drop-shadow por línea (muy costoso en GPU) */
+  lowFi?: boolean;
 };
 
 export function RadialTickRing({
-  ticks = 144,
+  ticks: ticksProp = 144,
   innerRatio = 0.86,
   outerRatio = 0.995,
   fillProgress = 0,
+  lowFi = false,
 }: RadialTickRingProps) {
+  const ticks = lowFi ? Math.min(ticksProp, 72) : ticksProp;
   const lines: JSX.Element[] = [];
   const p = Math.max(0, Math.min(1, fillProgress));
 
@@ -32,7 +36,7 @@ export function RadialTickRing({
     const y1 = r4(CY + ir * Math.sin(a));
     const x2 = r4(CX + or * Math.cos(a));
     const y2 = r4(CY + or * Math.sin(a));
-    const major = i % 12 === 0;
+    const major = i % (ticks >= 100 ? 12 : 6) === 0;
     const t = (i + 0.5) / ticks;
     const lit = t <= p;
 
@@ -48,7 +52,7 @@ export function RadialTickRing({
         strokeWidth={lit ? (major ? 0.75 : 0.5) : major ? 0.45 : 0.3}
         strokeLinecap="round"
         style={
-          lit
+          lit && !lowFi
             ? {
                 filter: "drop-shadow(0 0 3px rgba(251, 146, 60, 0.45))",
               }
