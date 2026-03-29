@@ -24,6 +24,6 @@ export const CREW: CrewMember[] = [
   { id: "pipon", nombre: "Pipo", reelShortCode: "", avatarSrc: "/crew/pipon.jpeg" },
   { id: "franco", nombre: "Franco", reelShortCode: "DWSyrpCN7t9", avatarSrc: "/crew/franco.jpeg" },
   { id: "franq", nombre: "Franq", reelShortCode: "DWNuJ7Lt53L", avatarSrc: "/crew/franq.jpeg" },
-  { id: "gustambo", nombre: "Gustambo", reelShortCode: "", avatarSrc: "/crew/gustambo.jpeg" },
+  { id: "gustambo", nombre: "Gustambo", reelShortCode: "DWdQtqxNM2W", avatarSrc: "/crew/gustambo.jpeg" },
   { id: "josue", nombre: "Josue", reelShortCode: "DWQUo5ItlFM", avatarSrc: "/crew/josue.jpeg" },
 ];
