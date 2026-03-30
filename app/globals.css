@@ -20,10 +20,15 @@
   --font-display: var(--font-fredoka);
 }
 
+html {
+  overflow-x: clip;
+}
+
 body {
   background: var(--cabo-void);
   color: var(--cabo-text);
   font-family: var(--font-nunito), system-ui, sans-serif;
+  max-width: 100%;
 }
 
 .trip-grain {

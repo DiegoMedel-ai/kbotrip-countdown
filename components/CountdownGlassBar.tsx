@@ -30,7 +30,7 @@ function CountdownCell({
           aria-hidden
         />
       )}
-      <div className="flex min-w-0 flex-1 flex-col items-center justify-center px-2 py-3 sm:px-4 sm:py-4">
+      <div className="flex min-w-0 flex-[1_1_0%] flex-col items-center justify-center px-1.5 py-3 sm:px-4 sm:py-4">
         <motion.span
           key={display}
           initial={reduce ? false : { opacity: 0.5, y: 6, rotate: -2 }}
@@ -66,7 +66,7 @@ export function CountdownGlassBar() {
 
   return (
     <div
-      className="countdown-glass flex w-full max-w-[min(92vw,420px)] flex-row items-stretch justify-center"
+      className="countdown-glass mx-auto flex w-full max-w-full flex-row items-stretch justify-center sm:max-w-[min(92vw,420px)]"
       role="timer"
       aria-live="polite"
       aria-atomic="true"

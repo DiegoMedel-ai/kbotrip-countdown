@@ -29,9 +29,9 @@ export default function RootLayout({
   return (
     <html
       lang="es"
-      className={`${nunito.variable} ${fredoka.variable} h-full antialiased`}
+      className={`${nunito.variable} ${fredoka.variable} min-h-dvh antialiased`}
     >
-      <body className="min-h-dvh flex flex-col bg-[#120a10] text-[#fffaf0]">
+      <body className="min-h-dvh overflow-x-clip bg-[#120a10] text-[#fffaf0]">
         {children}
       </body>
     </html>
