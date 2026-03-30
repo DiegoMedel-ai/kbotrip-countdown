@@ -1,26 +1,354 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --cabo-void: #120a10;
+  --cabo-deep: #1a1520;
+  --cabo-glow-a: #fbbf24;
+  --cabo-glow-b: #fb7185;
+  --cabo-glass: rgba(255, 251, 245, 0.14);
+  --cabo-glass-border: rgba(255, 255, 255, 0.22);
+  --cabo-text: #fffaf0;
+  --cabo-muted: #c4b5a0;
+  --background: var(--cabo-void);
+  --foreground: var(--cabo-text);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --font-sans: var(--font-nunito);
+  --font-display: var(--font-fredoka);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--cabo-void);
+  color: var(--cabo-text);
+  font-family: var(--font-nunito), system-ui, sans-serif;
+}
+
+.trip-grain {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  z-index: 1;
+}
+
+@keyframes blob-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(6%, 5%) scale(1.06);
+  }
+  66% {
+    transform: translate(-5%, 8%) scale(0.94);
+  }
+}
+
+.blob-drift {
+  animation-name: blob-drift;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@keyframes burst-pop {
+  0%,
+  100% {
+    transform: scale(0.85);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+.burst-pop {
+  animation-name: burst-pop;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob-drift,
+  .burst-pop {
+    animation: none !important;
+  }
+}
+
+/* Esfera 3D: capas radiales suaves + brillo animado (sin “rueda” cónica) */
+.sphere-core {
+  position: relative;
+  width: min(58%, 220px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  overflow: hidden;
+  isolation: isolate;
+  box-shadow:
+    inset 0 -28px 50px rgba(0, 0, 0, 0.55),
+    inset 0 18px 36px rgba(255, 255, 255, 0.22),
+    inset 2px 4px 12px rgba(255, 255, 255, 0.12),
+    0 16px 56px rgba(251, 146, 60, 0.32);
+}
+
+.sphere-core::before {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      ellipse 95% 88% at 30% 22%,
+      rgba(255, 252, 245, 0.92) 0%,
+      rgba(254, 243, 199, 0.45) 14%,
+      transparent 42%
+    ),
+    radial-gradient(
+      ellipse 85% 90% at 72% 68%,
+      rgba(251, 113, 133, 0.42) 0%,
+      transparent 48%
+    ),
+    radial-gradient(
+      ellipse 80% 75% at 38% 78%,
+      rgba(56, 189, 248, 0.28) 0%,
+      transparent 52%
+    ),
+    radial-gradient(
+      ellipse 70% 65% at 58% 32%,
+      rgba(167, 139, 250, 0.22) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      circle at 48% 52%,
+      #fb923c 0%,
+      #ea580c 28%,
+      #9a3412 58%,
+      #431407 88%,
+      #1c0a05 100%
+    );
+  background-size:
+    140% 140%,
+    200% 200%,
+    200% 200%,
+    190% 190%,
+    100% 100%;
+  background-position:
+    18% 8%,
+    85% 88%,
+    25% 85%,
+    70% 20%,
+    center;
+  animation:
+    sphere-fluid 18s ease-in-out infinite,
+    sphere-hue 26s linear infinite;
+}
+
+.sphere-core::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(
+      ellipse 55% 40% at 32% 24%,
+      rgba(255, 255, 255, 0.65) 0%,
+      rgba(255, 255, 255, 0.08) 35%,
+      transparent 52%
+    ),
+    radial-gradient(
+      circle at 72% 78%,
+      rgba(0, 0, 0, 0.45) 0%,
+      transparent 48%
+    );
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+}
+
+@keyframes sphere-fluid {
+  0%,
+  100% {
+    background-position:
+      18% 8%,
+      85% 88%,
+      25% 85%,
+      70% 20%,
+      center;
+  }
+  33% {
+    background-position:
+      28% 18%,
+      70% 75%,
+      45% 65%,
+      55% 35%,
+      center;
+  }
+  66% {
+    background-position:
+      12% 22%,
+      92% 70%,
+      38% 92%,
+      82% 28%,
+      center;
+  }
+}
+
+/* Ciclo continuo de tono; la luz/sombra 3D sigue en ::after (no se filtra igual) */
+@keyframes sphere-hue {
+  from {
+    filter: hue-rotate(0deg) saturate(1.2) brightness(1.04);
+  }
+  to {
+    filter: hue-rotate(360deg) saturate(1.2) brightness(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sphere-core::before {
+    animation: none;
+  }
+}
+
+/* Glow amplio detrás de la esfera — capa doble, más dinámico */
+.sphere-glow {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 220%;
+  height: 72%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(253, 224, 71, 0.35) 18%,
+    rgba(251, 113, 133, 0.42) 38%,
+    rgba(34, 211, 238, 0.32) 55%,
+    rgba(251, 146, 60, 0.38) 72%,
+    rgba(167, 139, 250, 0.28) 88%,
+    transparent 100%
+  );
+  filter: blur(42px);
+  pointer-events: none;
+  animation: glow-dance-a 5.5s ease-in-out infinite;
+}
+
+.sphere-glow--b {
+  transform: translate(-50%, -50%);
+  width: 260%;
+  height: 95%;
+  background: radial-gradient(
+      ellipse 55% 45% at 40% 50%,
+      rgba(251, 191, 36, 0.45) 0%,
+      transparent 65%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 75% 45%,
+      rgba(244, 114, 182, 0.4) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      ellipse 45% 50% at 50% 75%,
+      rgba(56, 189, 248, 0.32) 0%,
+      transparent 55%
+    );
+  filter: blur(52px);
+  opacity: 0.92;
+  animation: glow-dance-b 7s ease-in-out infinite;
+  animation-delay: -1.2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sphere-glow,
+  .sphere-glow--b {
+    animation: none;
+  }
+}
+
+@keyframes glow-dance-a {
+  0%,
+  100% {
+    opacity: 0.78;
+    transform: translate(-50%, -50%) scaleX(1) scaleY(1) rotate(-3deg);
+  }
+  25% {
+    opacity: 1;
+    transform: translate(-48%, -54%) scaleX(1.18) scaleY(1.12) rotate(2deg);
+  }
+  50% {
+    opacity: 0.88;
+    transform: translate(-52%, -46%) scaleX(1.08) scaleY(1.2) rotate(-1deg);
+  }
+  75% {
+    opacity: 0.98;
+    transform: translate(-50%, -52%) scaleX(1.22) scaleY(1.05) rotate(4deg);
+  }
+}
+
+@keyframes glow-dance-b {
+  0%,
+  100% {
+    opacity: 0.65;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  33% {
+    opacity: 0.95;
+    transform: translate(-46%, -48%) scale(1.12) rotate(5deg);
+  }
+  66% {
+    opacity: 0.72;
+    transform: translate(-54%, -52%) scale(1.08) rotate(-4deg);
+  }
+}
+
+.countdown-glass {
+  background: linear-gradient(
+    165deg,
+    rgba(15, 10, 18, 0.82) 0%,
+    rgba(28, 18, 28, 0.78) 50%,
+    rgba(18, 12, 22, 0.85) 100%
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 20px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.countdown-digit {
+  color: #fffef8;
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.85),
+    0 0 20px rgba(0, 0, 0, 0.35);
+}
+
+.countdown-label {
+  color: rgba(255, 250, 235, 0.88);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+}
+
+@keyframes bubble-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(2deg);
+  }
+}
+
+.crew-bubble-float {
+  animation-name: bubble-float;
+  animation-duration: 3.2s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .crew-bubble-float {
+    animation: none;
+  }
 }
